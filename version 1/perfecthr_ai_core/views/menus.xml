@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="menu_perfecthr_ai_root"
+              name="PerfectHR AI"
+              sequence="90"/>
+
+    <menuitem id="menu_perfecthr_ai_run"
+              name="Run AI Analysis"
+              parent="menu_perfecthr_ai_root"
+              action="action_perfecthr_ai_run_wizard"
+              sequence="10"/>
+
+    <menuitem id="menu_perfecthr_ai_results"
+              name="AI Results"
+              parent="menu_perfecthr_ai_root"
+              action="action_perfecthr_ai_result"
+              sequence="20"/>
+
+</odoo>

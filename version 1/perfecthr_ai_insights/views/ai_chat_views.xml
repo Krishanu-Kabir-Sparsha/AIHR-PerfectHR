@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Launcher: a plain URL action (NOT a server action) so the embedded SPA
+         navigates with window.location instead of looping. The controller
+         creates/gets the DM with the AI bot and redirects into Discuss.
+         NOTE: distinct xmlid from the retired server action (action_perfecthr_ai_chat)
+         so the upgrade never rebinds an external ID to a different model. -->
+    <record id="action_perfecthr_ai_chat_url" model="ir.actions.act_url">
+        <field name="name">Ask PerfectHR AI</field>
+        <field name="url">/perfecthr_ai/chat</field>
+        <field name="target">self</field>
+    </record>
+
+    <menuitem id="menu_perfecthr_ai_chat"
+              name="Ask PerfectHR AI"
+              parent="perfecthr_ai_core.menu_perfecthr_ai_root"
+              action="action_perfecthr_ai_chat_url"
+              sequence="5"/>
+
+</odoo>

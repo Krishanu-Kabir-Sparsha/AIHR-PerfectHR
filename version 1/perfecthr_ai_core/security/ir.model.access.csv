@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_perfecthr_ai_result_user,perfecthr.ai.result.user,model_perfecthr_ai_result,base.group_user,1,1,1,0
+access_perfecthr_ai_result_manager,perfecthr.ai.result.manager,model_perfecthr_ai_result,base.group_system,1,1,1,1
+access_perfecthr_ai_run_wizard_user,perfecthr.ai.run.wizard.user,model_perfecthr_ai_run_wizard,base.group_user,1,1,1,1

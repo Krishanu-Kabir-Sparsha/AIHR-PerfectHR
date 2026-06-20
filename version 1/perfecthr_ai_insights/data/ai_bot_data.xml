@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- noupdate: the bot identity persists; never recreated/overwritten on upgrade -->
+    <data noupdate="1">
+
+        <record id="partner_perfecthr_ai_bot" model="res.partner">
+            <field name="name">PerfectHR AI</field>
+            <field name="email">ai-assistant@perfecthr.net</field>
+            <field name="active" eval="True"/>
+            <field name="is_company" eval="False"/>
+        </record>
+
+    </data>
+</odoo>

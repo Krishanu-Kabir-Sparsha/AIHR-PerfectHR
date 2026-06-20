@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_hr_applicant_perfecthr_ai" model="ir.ui.view">
+        <field name="name">hr.applicant.perfecthr.ai</field>
+        <field name="model">hr.applicant</field>
+        <field name="inherit_id" ref="hr_recruitment.hr_applicant_view_form"/>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+
+            <!-- Supersede: hide the AIHR connector's basic AI buttons + tab -->
+            <xpath expr="//button[@name='action_match_cv']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_get_cv_result']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_analyze_interview']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_get_interview_result']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//page[@name='aihr_analysis']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <!-- Our richer AI action in the header -->
+            <xpath expr="//header" position="inside">
+                <button name="action_aihr_match_cv" type="object"
+                        string="Match CV (AI)" class="btn-primary" icon="fa-magic"/>
+            </xpath>
+
+            <!-- Our AI results tab (reads the normalized perfecthr.ai.result store) -->
+            <xpath expr="//notebook" position="inside">
+                <page string="AIHR Analysis" name="perfecthr_ai_analysis">
+                    <field name="ai_result_count" invisible="1"/>
+                    <field name="ai_result_ids" readonly="1" nolabel="1">
+                        <list>
+                            <field name="create_date" string="Submitted"/>
+                            <field name="module_key" string="Model"/>
+                            <field name="score"/>
+                            <field name="label" string="Verdict"/>
+                            <field name="is_real_inference" string="Real"/>
+                            <field name="state" widget="badge"
+                                   decoration-success="state == 'done'"
+                                   decoration-danger="state == 'failed'"
+                                   decoration-warning="state in ('queued', 'processing')"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>

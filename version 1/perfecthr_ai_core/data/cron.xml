@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Auto-poll queued/processing AI results so they complete without manual clicks -->
+    <record id="ir_cron_perfecthr_ai_poll_pending" model="ir.cron">
+        <field name="name">PerfectHR AI: Poll Pending Results</field>
+        <field name="model_id" ref="model_perfecthr_ai_result"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_poll_pending()</field>
+        <field name="interval_number">2</field>
+        <field name="interval_type">minutes</field>
+        <field name="active">True</field>
+    </record>
+
+</odoo>

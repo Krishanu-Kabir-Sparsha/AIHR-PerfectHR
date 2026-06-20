@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_perfecthr_ai_result_list" model="ir.ui.view">
+        <field name="name">perfecthr.ai.result.list</field>
+        <field name="model">perfecthr.ai.result</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="create_date"/>
+                <field name="module_key"/>
+                <field name="res_model"/>
+                <field name="res_id"/>
+                <field name="score"/>
+                <field name="label"/>
+                <field name="is_real_inference"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'done'"
+                       decoration-danger="state == 'failed'"
+                       decoration-warning="state in ('queued', 'processing')"/>
+                <field name="job_id" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_perfecthr_ai_result_form" model="ir.ui.view">
+        <field name="name">perfecthr.ai.result.form</field>
+        <field name="model">perfecthr.ai.result</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_poll" type="object" string="Poll Result"
+                            class="btn-primary" invisible="state == 'done'"/>
+                    <button name="action_open_source" type="object"
+                            string="Open Source Record" invisible="not res_id"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="queued,processing,done"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="module_key"/>
+                            <field name="res_model"/>
+                            <field name="res_id"/>
+                            <field name="job_id"/>
+                        </group>
+                        <group>
+                            <field name="score"/>
+                            <field name="label"/>
+                            <field name="is_real_inference"/>
+                            <field name="analyzed_at"/>
+                        </group>
+                    </group>
+                    <field name="error_message" readonly="1" invisible="not error_message"/>
+                    <notebook>
+                        <page string="Summary">
+                            <field name="summary" readonly="1"/>
+                        </page>
+                        <page string="Structured">
+                            <field name="structured_json" readonly="1"/>
+                        </page>
+                        <page string="Insights">
+                            <field name="insight_json" readonly="1"/>
+                        </page>
+                        <page string="Submitted Payload">
+                            <field name="payload_json" readonly="1"/>
+                        </page>
+                        <page string="Raw Result">
+                            <field name="raw_json" readonly="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_perfecthr_ai_result" model="ir.actions.act_window">
+        <field name="name">AI Results</field>
+        <field name="res_model">perfecthr.ai.result</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

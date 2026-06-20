@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_perfecthr_ai_run_wizard_form" model="ir.ui.view">
+        <field name="name">perfecthr.ai.run.wizard.form</field>
+        <field name="model">perfecthr.ai.run.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Run AI Analysis">
+                <group>
+                    <field name="module_key"/>
+                    <field name="applicant_id"
+                           options="{'no_create': True}"/>
+                </group>
+                <footer>
+                    <button name="action_run" type="object" string="Run" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_perfecthr_ai_run_wizard" model="ir.actions.act_window">
+        <field name="name">Run AI Analysis</field>
+        <field name="res_model">perfecthr.ai.run.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>
