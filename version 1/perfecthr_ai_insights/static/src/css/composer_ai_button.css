@@ -1,0 +1,17 @@
+/* PerfectHR AI Assistant composer button */
+
+.o-perfecthr-ai-icon {
+    height: 20px;
+    width: 20px;
+    object-fit: contain;
+    vertical-align: middle;
+}
+
+/* Composer action buttons are dimmed to 25-35% opacity and only brighten to
+   100% on hover. While AI mode is ON, keep our button locked at that hovered
+   look (full opacity + the same subtle backdrop-filter) the whole time, so it
+   reads as clearly active. !important is needed to beat the core dimming rule. */
+.o-perfecthr-ai-composer-btn.o-perfecthr-ai-on {
+    opacity: 1 !important;
+    backdrop-filter: invert(0.025);
+}

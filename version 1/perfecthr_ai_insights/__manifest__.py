@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'PerfectHR AI Insights',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.1.0',
     'category': 'Human Resources/AI',
     'summary': 'Surfaces AIHR analysis results inside PerfectHR screens',
     'description': """
@@ -21,9 +21,15 @@ Surfacing layer for the AI results produced by perfecthr_ai_core.
     'depends': ['perfecthr_ai_core', 'hr_recruitment', 'hr', 'mail'],
     'data': [
         'data/ai_bot_data.xml',
-        'views/ai_chat_views.xml',
         'views/hr_applicant_views.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            'perfecthr_ai_insights/static/src/css/composer_ai_button.css',
+            'perfecthr_ai_insights/static/src/js/composer_ai_button.js',
+            'perfecthr_ai_insights/static/src/xml/composer_ai_button.xml',
+        ],
+    },
     'installable': True,
     'application': False,
     'license': 'LGPL-3',

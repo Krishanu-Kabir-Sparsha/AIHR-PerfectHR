@@ -51,7 +51,7 @@ class PerfectHRAIResult(models.Model):
                 continue
             channel.message_post(
                 author_id=bot.id, body=rec._format_chat_body(),
-                message_type='comment', subtype_xmlid='mail.mt_comment', silent=True)
+                message_type='comment', subtype_xmlid='mail.mt_comment')
             rec.chat_posted = True
 
     def _format_chat_body(self):

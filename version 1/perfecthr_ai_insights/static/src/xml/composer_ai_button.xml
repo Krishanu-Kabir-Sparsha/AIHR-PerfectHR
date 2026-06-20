@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+
+    <!-- "AI Assistant" toggle button in the Discuss composer toolbar. Covers
+         both composer layouts that render the attach button. While active
+         (o-perfecthr-ai-on), sending a message routes it to the HR chatbot. -->
+    <t t-name="perfecthr_ai_insights.ComposerActionsAI"
+       t-inherit="mail.Composer.actions" t-inherit-mode="extension">
+        <xpath expr="//t[@t-call='mail.Composer.attachFiles']" position="after">
+            <button t-if="thread and thread.model === 'discuss.channel' and !props.composer.message"
+                    class="o-perfecthr-ai-composer-btn btn border-0 rounded-circle p-0"
+                    t-att-class="{ 'o-perfecthr-ai-on': perfecthrAi.active }"
+                    title="AI Assistant — click to toggle, then type and Send"
+                    aria-label="AI Assistant" type="button"
+                    t-on-click="togglePerfecthrAi">
+                <img class="o-perfecthr-ai-icon"
+                     src="/perfecthr_ai_insights/static/description/ai-assistant.png"
+                     alt="AI Assistant"/>
+            </button>
+        </xpath>
+    </t>
+
+    <t t-name="perfecthr_ai_insights.ComposerExtraActionsAI"
+       t-inherit="mail.Composer.extraActions" t-inherit-mode="extension">
+        <xpath expr="//t[@t-call='mail.Composer.attachFiles']" position="after">
+            <button t-if="thread and thread.model === 'discuss.channel' and !props.composer.message"
+                    class="o-perfecthr-ai-composer-btn btn border-0 rounded-circle p-0"
+                    t-att-class="{ 'o-perfecthr-ai-on': perfecthrAi.active }"
+                    title="AI Assistant — click to toggle, then type and Send"
+                    aria-label="AI Assistant" type="button"
+                    t-on-click="togglePerfecthrAi">
+                <img class="o-perfecthr-ai-icon"
+                     src="/perfecthr_ai_insights/static/description/ai-assistant.png"
+                     alt="AI Assistant"/>
+            </button>
+        </xpath>
+    </t>
+
+</templates>
