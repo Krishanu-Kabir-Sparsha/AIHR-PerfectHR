@@ -127,6 +127,28 @@ class AIOrchestrator:
 
     # ─────────────────────────────────────────────────────────────────────────
 
+    def _submit_dispatch(self, module_key, payload):
+        """Canonical CP path (AIHR_Response_to_Integration_Plan.md §2): POST
+        /api/v1/runtime/dispatch {module_name, payload} with the tenant license
+        JWT, so the request goes THROUGH the Control Plane and is logged there
+        (this is the path the working terminal tests used). Returns
+        {success, data:{job_id}} so submit() can treat it uniformly."""
+        svc = self._service()
+        token = svc._license_key() or svc._runtime_token()
+        if not token:
+            return {'success': False, 'message': 'no license/runtime token'}
+        try:
+            resp = svc._post('/api/v1/runtime/dispatch',
+                             {'module_name': module_key, 'payload': payload or {}},
+                             token=token, _retry=False) or {}
+        except Exception as exc:  # noqa: BLE001
+            return {'success': False, 'message': str(exc)}
+        job_id = (resp.get('job_id') or resp.get('execution_id')
+                  or (resp.get('data') or {}).get('job_id') or '')
+        if not job_id:
+            return {'success': False, 'message': 'dispatch returned no job_id'}
+        return {'success': True, 'data': {'job_id': job_id}}
+
     def submit(self, module_key, record=None, payload=None, res_model=None, res_id=None):
         """Submit an AI job and create a perfecthr.ai.result tracker. Returns it.
 
@@ -156,12 +178,20 @@ class AIOrchestrator:
             raise UserError("Missing required input(s) for %s: %s"
                             % (module_key, ", ".join(missing)))
 
-        response = self._service().submit_ai_job(module_key, payload)
+        # Submission path priority:
+        #  1. /api/v1/runtime/dispatch (module_name) — canonical CP path, logged
+        #     in the Control Plane (the path the working terminal tests used);
+        #  2. /api/v1/jobs (task_name) — older CP path (CP-enabled tasks only);
+        #  3. local runtime (localhost:8009) — when the CP rejects the task.
+        response = self._submit_dispatch(module_key, payload)
+        if not response.get('success'):
+            _logger.info("CP dispatch unavailable for %s (%s) — trying /api/v1/jobs",
+                         module_key, response.get('message'))
+            response = self._service().submit_ai_job(module_key, payload)
         if not response.get('success'):
             msg = response.get('message', '')
-            # CP returned 422 "Unknown or disabled task" → the task is registered
-            # in the local runtime but not yet in the CP's per-tenant allowlist.
-            # Fall back to submitting directly to the local runtime.
+            # CP rejected the task ("Unknown or disabled task") → fall back to the
+            # local runtime, which has all the workers registered.
             if 'HTTP 422' in msg and ('Unknown or disabled task' in msg
                                       or 'VALIDATION_FAILED' in msg):
                 _logger.info(

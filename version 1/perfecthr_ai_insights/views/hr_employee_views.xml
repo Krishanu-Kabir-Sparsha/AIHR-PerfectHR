@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_hr_employee_perfecthr_ai" model="ir.ui.view">
+        <field name="name">hr.employee.perfecthr.ai.performance</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+
+            <!-- Action in the header -->
+            <xpath expr="//header" position="inside">
+                <button name="action_perfecthr_performance" type="object"
+                        string="Performance Analysis (AI)" class="btn-primary"
+                        icon="fa-line-chart"/>
+            </xpath>
+
+            <!-- Results tab (reads the normalized perfecthr.ai.result store) -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Performance Analysis (AI)" name="perfecthr_ai_performance">
+                    <field name="ai_result_count" invisible="1"/>
+                    <field name="ai_result_ids" readonly="1" nolabel="1">
+                        <list>
+                            <field name="create_date" string="Analyzed"/>
+                            <field name="module_key" string="Model"/>
+                            <field name="score" string="Score"/>
+                            <field name="label" string="Rating"/>
+                            <field name="is_real_inference" string="Real"/>
+                            <field name="state" widget="badge"
+                                   decoration-success="state == 'done'"
+                                   decoration-danger="state == 'failed'"
+                                   decoration-warning="state in ('queued', 'processing')"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>

@@ -35,6 +35,14 @@ class PerfectHRAIMixin(models.AbstractModel):
         from odoo.addons.perfecthr_ai_core.services.ai_orchestrator import AIOrchestrator
         return AIOrchestrator(self.env).submit(module_key, self)
 
+    def _ai_submit_payload(self, module_key, payload):
+        """Submit an AI job with an explicit, pre-built payload (for verticals
+        that ground the payload themselves, e.g. Performance Analysis)."""
+        self.ensure_one()
+        from odoo.addons.perfecthr_ai_core.services.ai_orchestrator import AIOrchestrator
+        return AIOrchestrator(self.env).submit(
+            module_key, payload=payload, res_model=self._name, res_id=self.id)
+
     def action_view_ai_results(self):
         self.ensure_one()
         return {

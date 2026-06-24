@@ -12,4 +12,17 @@
         <field name="active">True</field>
     </record>
 
+    <!-- Heartbeat for local v2.0.0 runtime (aihr-runtime-53-perfecthrsaas).
+         Keeps it Active on the Control Plane. Reuses the runtime_token that
+         AIHR: Refresh Runtime Token (cron 171) keeps fresh automatically. -->
+    <record id="ir_cron_perfecthr_ai_runtime_heartbeat" model="ir.cron">
+        <field name="name">PerfectHR AI: Send Runtime Heartbeat</field>
+        <field name="model_id" ref="model_perfecthr_ai_result"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_send_runtime_heartbeat()</field>
+        <field name="interval_number">5</field>
+        <field name="interval_type">minutes</field>
+        <field name="active">True</field>
+    </record>
+
 </odoo>

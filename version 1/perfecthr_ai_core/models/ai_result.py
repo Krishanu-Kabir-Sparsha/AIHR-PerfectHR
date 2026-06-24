@@ -4,6 +4,7 @@
 This is the seam between the engine (perfecthr_ai_core) and the surfacing layer
 (perfecthr_ai_insights): the engine produces these rows, insights consumes them.
 """
+import json
 import logging
 
 from odoo import api, fields, models
@@ -78,6 +79,84 @@ class PerfectHRAIResult(models.Model):
             'view_mode': 'form',
             'target': 'current',
         }
+
+    @api.model
+    def _cron_send_runtime_heartbeat(self):
+        """Scheduled: heartbeat + re-register the local v2.0.0 AIHR runtime with
+        the Control Plane so its dispatch resolver keeps routing to our tunnel.
+
+        Reuses the runtime_token kept fresh by AIHR: Refresh Runtime Token
+        (aihr.license.cron_refresh_token) — no separate token lifecycle needed.
+        Also calls /api/v1/runtime/register when the gateway URL is configured,
+        so a tunnel restart only requires updating perfecthr_aihr.runtime_gateway_url
+        in ir.config_parameter — the next heartbeat tick will re-register."""
+        import urllib.request
+        import urllib.error
+        from datetime import datetime, timezone
+
+        param = self.env['ir.config_parameter'].sudo()
+        token = param.get_param('perfecthr_aihr.runtime_token', '')
+        if not token:
+            _logger.warning("AI runtime heartbeat: no runtime_token configured, skipping")
+            return
+
+        cp_url = param.get_param('perfecthr_aihr.control_plane_url', 'https://aihr.daffodilglobal.ai')
+        runtime_id = param.get_param('perfecthr_aihr.local_runtime_id', 'aihr-runtime-53-perfecthrsaas')
+        tenant_id = int(param.get_param('perfecthr_aihr.tenant_id') or 53)
+        gateway_url = param.get_param('perfecthr_aihr.runtime_gateway_url', '')
+        headers = {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token}
+        now_ts = datetime.now(timezone.utc).isoformat()
+
+        def _post(path, body_dict):
+            data = json.dumps(body_dict).encode()
+            req = urllib.request.Request(cp_url.rstrip('/') + path, data=data, headers=headers)
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                return resp.status
+
+        # 1. Heartbeat — keeps the runtime alive in the CP resolver
+        hb_payload = {
+            "runtime_id": runtime_id,
+            "tenant_id": tenant_id,
+            "version": "2.0.0",
+            "health": "healthy",
+            "module_count": 7,
+            "worker_status": "running",
+            "timestamp": now_ts,
+        }
+        if gateway_url:
+            hb_payload["hostname"] = gateway_url
+
+        try:
+            status = _post('/api/v1/runtime/heartbeat', hb_payload)
+            _logger.info("AI runtime heartbeat sent: HTTP %d runtime=%s", status, runtime_id)
+        except urllib.error.HTTPError as e:
+            body = e.read().decode('utf-8', errors='replace')
+            _logger.warning("AI runtime heartbeat failed: HTTP %d: %s", e.code, body[:300])
+            return
+        except Exception as exc:
+            _logger.warning("AI runtime heartbeat error: %s", exc)
+            return
+
+        # 2. Re-register if we have a gateway URL (idempotent — safe to call every tick)
+        if gateway_url:
+            try:
+                status = _post('/api/v1/runtime/register', {
+                    "tenant_id": tenant_id,
+                    "runtime_id": runtime_id,
+                    "version": "2.0.0",
+                    "hostname": gateway_url,
+                    "module_inventory": [
+                        "hr_chatbot", "cv_matcher", "performance_management",
+                        "learning_and_development", "employee_engagement_retention",
+                        "video_interview", "workforce_insights",
+                    ],
+                })
+                _logger.info("AI runtime re-registered: HTTP %d hostname=%s", status, gateway_url)
+            except urllib.error.HTTPError as e:
+                body = e.read().decode('utf-8', errors='replace')
+                _logger.warning("AI runtime register failed: HTTP %d: %s", e.code, body[:200])
+            except Exception as exc:
+                _logger.warning("AI runtime register error: %s", exc)
 
     @api.model
     def _cron_poll_pending(self, limit=100):
