@@ -4,3 +4,4 @@ from . import base
 from . import cv_matcher
 from . import hr_chatbot
 from . import performance_management
+from . import learning_and_development
