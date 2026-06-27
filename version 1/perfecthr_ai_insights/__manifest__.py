@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'PerfectHR AI Insights',
-    'version': '18.0.1.3.0',
+    'version': '18.0.1.5.0',
     'category': 'Human Resources/AI',
     'summary': 'Surfaces AIHR analysis results inside PerfectHR screens',
     'description': """
@@ -23,6 +23,7 @@ Surfacing layer for the AI results produced by perfecthr_ai_core.
         'data/ai_bot_data.xml',
         'views/hr_applicant_views.xml',
         'views/hr_employee_views.xml',
+        'views/ai_result_views.xml',
     ],
     'assets': {
         'web.assets_backend': [

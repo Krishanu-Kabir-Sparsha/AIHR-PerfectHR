@@ -16,6 +16,9 @@
                 <button name="action_perfecthr_learning" type="object"
                         string="Learning &amp; Development (AI)" class="btn-secondary"
                         icon="fa-graduation-cap"/>
+                <button name="action_perfecthr_engagement" type="object"
+                        string="Engagement &amp; Retention (AI)" class="btn-secondary"
+                        icon="fa-heartbeat"/>
             </xpath>
 
             <!-- Per-model results tabs (read the normalized perfecthr.ai.result store) -->
@@ -39,6 +42,29 @@
                         <list>
                             <field name="create_date" string="Analyzed"/>
                             <field name="label" string="Recommendations"/>
+                            <field name="is_real_inference" string="Real"/>
+                            <field name="state" widget="badge"
+                                   decoration-success="state == 'done'"
+                                   decoration-danger="state == 'failed'"
+                                   decoration-warning="state in ('queued', 'processing')"/>
+                        </list>
+                    </field>
+                </page>
+                <page string="Engagement &amp; Retention (AI)" name="perfecthr_ai_engagement">
+                    <group>
+                        <group string="HR-rated inputs (feed the AI)">
+                            <field name="job_satisfaction"/>
+                            <field name="job_involvement"/>
+                        </group>
+                    </group>
+                    <field name="ai_engagement_panel_html" widget="html" nolabel="1" readonly="1"
+                           invisible="not ai_engagement_panel_html"/>
+                    <separator string="Past analyses"/>
+                    <field name="ai_engagement_result_ids" readonly="1" nolabel="1">
+                        <list>
+                            <field name="create_date" string="Analyzed"/>
+                            <field name="score" string="Engagement"/>
+                            <field name="label" string="Risk"/>
                             <field name="is_real_inference" string="Real"/>
                             <field name="state" widget="badge"
                                    decoration-success="state == 'done'"

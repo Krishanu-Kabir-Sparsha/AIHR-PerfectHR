@@ -11,11 +11,22 @@ import logging
 
 from markupsafe import Markup, escape
 
-from odoo import _, fields, models
+from odoo import _, api, fields, models
 
 _logger = logging.getLogger(__name__)
 
 _BOT_XMLID = 'perfecthr_ai_insights.partner_perfecthr_ai_bot'
+
+
+def _seg_text(item):
+    """Render a driver / at-risk-segment / recommendation item (str or dict)."""
+    if isinstance(item, dict):
+        name = item.get('segment') or item.get('name') or item.get('title') or ''
+        level = item.get('risk') or item.get('risk_level') or item.get('priority') or ''
+        if name and level:
+            return '%s — %s' % (name, level)
+        return name or item.get('description') or item.get('reason') or json.dumps(item, default=str)
+    return str(item)
 
 
 class PerfectHRAIResult(models.Model):
@@ -25,6 +36,12 @@ class PerfectHRAIResult(models.Model):
         string='Chat Answer Posted', default=False, copy=False,
         help="Set once a chatbot result has been delivered into its Discuss "
              "conversation, so the cron and the in-line wait never double-post.")
+
+    engagement_panel_html = fields.Html(
+        string='Engagement Panel', sanitize=False,
+        compute='_compute_engagement_panel',
+        help="Formatted visual panel for Engagement & Retention results "
+             "(score bar + risk badge + drivers / segments / recommendations).")
 
     def write(self, vals):
         res = super().write(vals)
@@ -77,3 +94,53 @@ class PerfectHRAIResult(models.Model):
             body += Markup("<p><i>⚠️ This looks like a fallback response (the AI "
                            "engine may be temporarily unavailable).</i></p>")
         return body
+
+    @api.depends('module_key', 'score', 'label', 'structured_json', 'state')
+    def _compute_engagement_panel(self):
+        for rec in self:
+            if rec.module_key == 'employee_engagement_retention' and rec.state == 'done':
+                rec.engagement_panel_html = rec._build_engagement_panel()
+            else:
+                rec.engagement_panel_html = False
+
+    def _build_engagement_panel(self):
+        """Render score bar + color-coded risk badge + drivers / segments /
+        recommendations as a self-contained HTML panel (inline styles)."""
+        self.ensure_one()
+        try:
+            data = json.loads(self.structured_json or '{}')
+        except (ValueError, TypeError):
+            data = {}
+        risk = (self.label or '').lower()
+        color = {'low': '#28a745', 'medium': '#f0ad4e',
+                 'high': '#dc3545'}.get(risk, '#6c757d')
+        width = max(0, min(100, int(round(self.score or 0))))
+
+        badge = Markup('<span style="background:%s;color:#fff;padding:2px 10px;'
+                       'border-radius:12px;font-weight:600;text-transform:uppercase;">%s</span>'
+                       ) % (color, escape(risk or 'n/a'))
+        bar = (Markup('<div style="background:#e9ecef;border-radius:6px;height:18px;'
+                      'max-width:340px;margin:6px 0 4px;">')
+               + Markup('<div style="background:%s;height:18px;border-radius:6px;'
+                        'width:%s%%;"></div>') % (color, width)
+               + Markup('</div>'))
+
+        def _section(title, items):
+            items = [i for i in (items or []) if i]
+            if not items:
+                return Markup('')
+            lis = Markup('').join(
+                Markup('<li style="margin:2px 0;">%s</li>') % _seg_text(i)
+                for i in items[:8])
+            return (Markup('<div style="margin-top:10px;"><b>%s</b>') % title
+                    + Markup('<ul style="margin:4px 0 0;padding-left:20px;">%s</ul></div>') % lis)
+
+        return (Markup('<div style="padding:6px 2px;max-width:660px;">')
+                + Markup('<div style="display:flex;align-items:center;gap:12px;">'
+                         '<span style="font-size:22px;font-weight:700;">%s/100</span>%s</div>'
+                         ) % (round(self.score or 0, 1), badge)
+                + bar
+                + _section('Key drivers', data.get('key_drivers'))
+                + _section('At-risk segments', data.get('at_risk_segments'))
+                + _section('Recommended actions', data.get('recommendations'))
+                + Markup('</div>'))

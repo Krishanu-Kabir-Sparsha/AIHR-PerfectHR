@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Rich Engagement & Retention panel on the result form (only for that model) -->
+    <record id="view_perfecthr_ai_result_form_engagement" model="ir.ui.view">
+        <field name="name">perfecthr.ai.result.form.engagement</field>
+        <field name="model">perfecthr.ai.result</field>
+        <field name="inherit_id" ref="perfecthr_ai_core.view_perfecthr_ai_result_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="before">
+                <field name="engagement_panel_html" widget="html" nolabel="1" readonly="1"
+                       invisible="module_key != 'employee_engagement_retention'"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
